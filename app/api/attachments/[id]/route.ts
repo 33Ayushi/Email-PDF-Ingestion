@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import * as fs from 'fs';
 
 export async function DELETE(
   _req: NextRequest,
@@ -9,7 +8,7 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // 1. Find the attachment to get the file path
+    // 1. Find the attachment
     const attachment = await prisma.pdfAttachment.findUnique({
       where: { id }
     });
@@ -21,21 +20,18 @@ export async function DELETE(
       );
     }
 
-    // 2. Delete the physical file from disk
-    if (attachment.savedPath && fs.existsSync(attachment.savedPath)) {
-      try {
-        fs.unlinkSync(attachment.savedPath);
-      } catch (fileErr: any) {
-        console.error(`Failed to delete file: ${fileErr.message}`);
-      }
-    }
+    // ❌ FILE DELETE REMOVED (Vercel does not support fs)
 
-    // 3. Delete from database
+    // 2. Delete from database
     await prisma.pdfAttachment.delete({
       where: { id }
     });
 
-    return NextResponse.json({ success: true, message: 'Attachment deleted' });
+    return NextResponse.json({
+      success: true,
+      message: 'Attachment deleted (DB only)'
+    });
+
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
