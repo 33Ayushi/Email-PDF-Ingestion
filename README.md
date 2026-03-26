@@ -45,6 +45,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+deployed live link : https://email-pdf-ingestion-vnaq.vercel.app/
 
 ---
 
