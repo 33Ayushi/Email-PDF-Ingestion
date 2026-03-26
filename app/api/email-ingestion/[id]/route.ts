@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as fs from 'fs';
-import * as path from 'path';
 
 // GET - single config by id
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     const config = await prisma.emailIngestionConfig.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         emailAddress: true,
@@ -36,9 +37,10 @@ export async function GET(
 // PUT - Update config
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
     const { emailAddress, connectionType, host, port, secure, username, password } = body;
 
@@ -52,7 +54,7 @@ export async function PUT(
     if (password) updateData.password = password;
 
     const updated = await prisma.emailIngestionConfig.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
     });
 
@@ -65,26 +67,23 @@ export async function PUT(
 // DELETE - Remove config and associated PDF files
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
-
   try {
+    const { id } = await params;
+
     // 1. Find all attachments linked to this config
     const attachments = await prisma.pdfAttachment.findMany({
       where: { configId: id }
     });
 
-    console.log(`[Deletion] Found ${attachments.length} attachments to delete for config ${id}`);
-
-    // 2. Physically delete each file from disk
+    // 2. Physically delete each file from disk (Safe-guarded for Vercel)
     for (const attachment of attachments) {
       if (attachment.savedPath && fs.existsSync(attachment.savedPath)) {
         try {
           fs.unlinkSync(attachment.savedPath);
-          console.log(`[Deletion] Successfully deleted file: ${attachment.savedPath}`);
         } catch (fileErr: any) {
-          console.error(`[Deletion] Failed to delete file at ${attachment.savedPath}: ${fileErr.message}`);
+          // Silent on serverless environments
         }
       }
     }
@@ -101,10 +100,9 @@ export async function DELETE(
 
     return NextResponse.json({ 
       success: true, 
-      message: `Configuration and ${attachments.length} associated PDFs deleted successfully.` 
+      message: `Configuration and associated PDFs deleted successfully.` 
     });
   } catch (error: any) {
-    console.error(`[Deletion Error] ${error.message}`);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
