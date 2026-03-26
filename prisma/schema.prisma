@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EmailIngestionConfig {
+  id             String   @id @default(uuid())
+  emailAddress   String
+  connectionType String   // IMAP, POP3, GMAIL, OUTLOOK
+  host           String?
+  port           Int?     @default(993)
+  secure         Boolean  @default(true)
+  username       String
+  password       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PdfAttachment {
+  id                 String   @id @default(uuid())
+  configId           String?
+  fromAddress        String
+  subject            String
+  dateReceived       DateTime
+  attachmentFileName String
+  savedPath          String
+  fileSizeBytes      Int?
+  createdAt          DateTime @default(now())
+}

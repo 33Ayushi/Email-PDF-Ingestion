@@ -1,0 +1,6 @@
+{
+  "/api/email-ingestion/route": "app/api/email-ingestion/route.js",
+  "/api/attachments/route": "app/api/attachments/route.js",
+  "/api/email-ingestion/check/route": "app/api/email-ingestion/check/route.js",
+  "/page": "app/page.js"
+}
