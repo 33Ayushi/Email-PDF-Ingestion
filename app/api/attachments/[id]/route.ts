@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import * as fs from 'fs';
-import * as path from 'path';
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // 1. Find the attachment to get the file path
     const attachment = await prisma.pdfAttachment.findUnique({
@@ -16,7 +15,10 @@ export async function DELETE(
     });
 
     if (!attachment) {
-      return NextResponse.json({ success: false, error: 'Attachment not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Attachment not found' },
+        { status: 404 }
+      );
     }
 
     // 2. Delete the physical file from disk
@@ -35,6 +37,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, message: 'Attachment deleted' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
   }
 }
