@@ -1,6 +1,6 @@
 # Email PDF Ingestion Platform
 
-A full-stack application that automatically scans email inboxes for PDF attachments, downloads them locally, and stores metadata in PostgreSQL.
+A full-stack application that automatically scans email inboxes for PDF attachments, downloads them locally, and stores metadata in PostgreSQL..
 
 ## 🚀 Tech Stack
 
